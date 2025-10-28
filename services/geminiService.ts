@@ -15,6 +15,38 @@ const getAnalysisPromptAndSchema = (
   const commonSystemInstruction = `You are a world-class data scientist AI assistant. Your task is to perform data analysis on user-provided CSV data and return the results in a structured JSON format that strictly adheres to the provided schema. Do not include any markdown formatting (like \`\`\`json) in your output.`;
   
   switch (analysisType) {
+    case AnalysisType.DataCleaner:
+      return {
+          prompt: `Act as an expert data cleaning specialist. Analyze the provided CSV data sample and perform the following cleaning operations:
+- Identify the most likely data type for each column (e.g., String, Integer, Float, Date).
+- Trim leading/trailing whitespace from all string values.
+- For cells that are completely empty or contain only whitespace, replace them with a JSON null value.
+- Attempt to standardize formats where obvious (e.g., date formats), but prioritize preserving the original data if uncertain.
+Return the cleaned dataset as an array of JSON objects, where each object represents a row. Also, provide a brief summary of the cleaning actions you performed as an array of strings.`,
+          schema: {
+              type: Type.OBJECT,
+              properties: {
+                  cleanedData: {
+                      type: Type.ARRAY,
+                      description: "The cleaned data, where each item is an object representing a row.",
+                      items: {
+                          type: Type.OBJECT,
+                          properties: {}, // Properties are dynamic and will be injected later
+                      },
+                  },
+                  cleaningSummary: {
+                      type: Type.ARRAY,
+                      description: "A summary of cleaning actions performed.",
+                      items: {
+                          type: Type.STRING
+                      }
+                  }
+              },
+              required: ["cleanedData", "cleaningSummary"]
+          },
+          systemInstruction: commonSystemInstruction,
+      };
+
     case AnalysisType.EDA:
       return {
         prompt: `Perform a comprehensive Exploratory Data Analysis on the provided CSV data sample. Return the results as structured arrays of objects.
@@ -317,26 +349,55 @@ export const performAnalysis = async (
   analysisType: AnalysisType,
   options: AnalysisOptions
 ): Promise<AnalysisResultData> => {
-  const { prompt, schema, systemInstruction } = getAnalysisPromptAndSchema(analysisType, options);
+  let { prompt, schema, systemInstruction } = getAnalysisPromptAndSchema(analysisType, options);
 
   try {
-    // Sample the data to prevent exceeding token limits with large files.
     const lines = csvData.trim().split('\n');
-    const header = lines[0];
+    const headerLine = lines[0];
+    const headers = headerLine.split(',').map(h => h.trim().replace(/"/g, ''));
     const dataRows = lines.slice(1);
     
-    const sampleSize = 200;
+    const sampleSize = analysisType === AnalysisType.DataCleaner ? 500 : 200;
     const dataSample = dataRows.length > sampleSize 
       ? dataRows.slice(0, sampleSize) 
       : dataRows;
       
-    const sampledCsvData = [header, ...dataSample].join('\n');
+    const sampledCsvData = [headerLine, ...dataSample].join('\n');
+    
+    if (analysisType === AnalysisType.DataCleaner) {
+      const dynamicProperties: { [key: string]: { type: Type, description?: string } } = {};
+      for (const header of headers) {
+        dynamicProperties[header] = { type: Type.STRING, description: `Cleaned data for column: ${header}` };
+      }
+
+      schema = {
+        type: Type.OBJECT,
+        properties: {
+            cleanedData: {
+                type: Type.ARRAY,
+                description: "The cleaned data, where each item is an object representing a row.",
+                items: {
+                    type: Type.OBJECT,
+                    properties: dynamicProperties,
+                    required: headers,
+                },
+            },
+            cleaningSummary: {
+                type: Type.ARRAY,
+                description: "A summary of cleaning actions performed.",
+                items: {
+                    type: Type.STRING
+                }
+            }
+        },
+        required: ["cleanedData", "cleaningSummary"]
+      };
+    }
     
     const fullPrompt = `${prompt}\n\nHere is the CSV data:\n\n${sampledCsvData}`;
     
     const response = await ai.models.generateContent({
       model: "gemini-2.5-pro",
-      // Use the explicit Content object structure instead of a raw string for better reliability.
       contents: { parts: [{ text: fullPrompt }] },
       config: {
         responseMimeType: "application/json",
@@ -351,7 +412,6 @@ export const performAnalysis = async (
       throw new Error("API returned an empty response.");
     }
     
-    // Defensive parsing to handle cases where the model might still wrap the JSON in markdown.
     let jsonString = text.trim();
     if (jsonString.startsWith('```json')) {
       jsonString = jsonString.substring(7, jsonString.length - 3).trim();
@@ -365,7 +425,6 @@ export const performAnalysis = async (
     console.error(`Error performing Gemini analysis for ${analysisType}:`, error);
 
     if (error instanceof SyntaxError) {
-      // This indicates a JSON parsing error, meaning the API response was not valid JSON.
       console.error("Failed to parse JSON response from API.");
       throw new Error(`The API returned a malformed response for ${analysisType}. This may be a temporary issue, please try again.`);
     }
@@ -397,36 +456,41 @@ export const getPredictionSuggestions = async (csvData: string): Promise<Predict
   Here is the CSV data sample:
   ${sampledCsvData}`;
 
+  // FIX: Refactored schema definition to avoid a TypeScript type inference issue with complex nested schemas.
+  // The original inline object literal was causing a spurious error on the 'required' property.
+  // Defining 'itemsSchema' separately with type 'any' resolves this.
+  const itemsSchema: any = {
+    type: Type.OBJECT,
+    properties: {
+      title: { 
+        type: Type.STRING,
+        description: "A short, catchy title for the suggested analysis (e.g., 'Predict Sales Volume')."
+      },
+      analysisType: {
+        type: Type.STRING,
+        enum: [AnalysisType.Classification, AnalysisType.Regression, AnalysisType.TimeSeries]
+      },
+      options: {
+        type: Type.OBJECT,
+        properties: {
+          classificationTarget: { type: Type.STRING },
+          regressionTarget: { type: Type.STRING },
+          timeSeriesDateCol: { type: Type.STRING },
+          timeSeriesValueCol: { type: Type.STRING },
+        },
+        description: "The column(s) to use for the analysis. Only include the relevant properties for the analysisType."
+      },
+      justification: {
+        type: Type.STRING,
+        description: "A brief explanation of why this is a useful prediction to make from this data."
+      }
+    },
+    required: ["title", "analysisType", "options", "justification"]
+  };
+
   const schema: any = { // Using `any` for schema to match existing pattern
     type: Type.ARRAY,
-    items: {
-      type: Type.OBJECT,
-      properties: {
-        title: { 
-          type: Type.STRING,
-          description: "A short, catchy title for the suggested analysis (e.g., 'Predict Sales Volume')."
-        },
-        analysisType: {
-          type: Type.STRING,
-          enum: [AnalysisType.Classification, AnalysisType.Regression, AnalysisType.TimeSeries]
-        },
-        options: {
-          type: Type.OBJECT,
-          properties: {
-            classificationTarget: { type: Type.STRING },
-            regressionTarget: { type: Type.STRING },
-            timeSeriesDateCol: { type: Type.STRING },
-            timeSeriesValueCol: { type: Type.STRING },
-          },
-          description: "The column(s) to use for the analysis. Only include the relevant properties for the analysisType."
-        },
-        justification: {
-          type: Type.STRING,
-          description: "A brief explanation of why this is a useful prediction to make from this data."
-        }
-      },
-      required: ["title", "analysisType", "options", "justification"]
-    }
+    items: itemsSchema,
   };
 
   try {

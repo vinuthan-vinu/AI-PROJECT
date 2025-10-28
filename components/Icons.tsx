@@ -72,3 +72,9 @@ export const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21v-2a4 4 0 00-4-4H9" />
     </svg>
 );
+
+export const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.293 2.293a1 1 0 010 1.414L16 6m-2-2l2.293-2.293a1 1 0 011.414 0L19 4m-2-2l2.293 2.293a1 1 0 010 1.414L16 6m0 0l-2.293 2.293a1 1 0 01-1.414 0L10 6m-6 4l2.293-2.293a1 1 0 011.414 0L10 10m-4 6l2.293 2.293a1 1 0 010 1.414L6 19m-2-2l2.293 2.293a1 1 0 011.414 0L10 19m-4-6l-2.293 2.293a1 1 0 01-1.414 0L1 10m14-4l2.293-2.293a1 1 0 011.414 0L19 4m-2 12l2.293 2.293a1 1 0 010 1.414L16 19m2-2l-2.293 2.293a1 1 0 01-1.414 0L12 16" />
+    </svg>
+);

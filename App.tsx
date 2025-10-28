@@ -11,6 +11,31 @@ import { SuggestionsLoader } from './components/SuggestionsLoader';
 import { InsightsSummaryDisplay } from './components/InsightsSummaryDisplay';
 import { InsightsLoader } from './components/InsightsLoader';
 
+// Utility to convert JSON array of objects to CSV string
+const jsonToCsv = (jsonData: Record<string, any>[]) => {
+  if (!jsonData || jsonData.length === 0) return "";
+  const headers = Object.keys(jsonData[0]);
+  const csvRows = [
+    headers.join(','), // header row
+    ...jsonData.map(row =>
+      headers.map(header => {
+        let cell = row[header];
+        if (cell === null || cell === undefined) {
+          return ''; // Represent null/undefined as empty string in CSV
+        }
+        cell = String(cell);
+        // Escape commas, quotes, and newlines
+        if (cell.includes(',') || cell.includes('"') || cell.includes('\n')) {
+          return `"${cell.replace(/"/g, '""')}"`;
+        }
+        return cell;
+      }).join(',')
+    )
+  ];
+  return csvRows.join('\n');
+};
+
+
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
   const [csvData, setCsvData] = useState<string | null>(null);
@@ -98,6 +123,22 @@ export default function App() {
     clearAllResults();
   };
 
+  const handleApplyCleanedData = (cleanedDataJson: Record<string, any>[]) => {
+    if (!cleanedDataJson || cleanedDataJson.length === 0) return;
+    const newCsvData = jsonToCsv(cleanedDataJson);
+    const newHeaders = Object.keys(cleanedDataJson[0]);
+    
+    setCsvData(newCsvData);
+    setHeaders(newHeaders);
+    
+    // Reset the state to reflect the new data
+    clearAllResults();
+    setSelectedAnalysis(null);
+
+    // Give user feedback
+    alert("Cleaned data has been applied! You can now run other analyses on the formatted dataset.");
+  };
+
   const renderMainContent = () => {
     if (!file) {
       return (
@@ -120,7 +161,7 @@ export default function App() {
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
               <h2 className="text-2xl font-semibold text-on-surface">Dataset: <span className="font-mono text-secondary">{file.name}</span></h2>
-              <p className="text-on-surface-variant mt-2">Select an analysis from the sidebar, or use an AI suggestion below.</p>
+              <p className="text-on-surface-variant mt-2">Select a tool from the sidebar to get started.</p>
             </div>
             <button
               onClick={handleGenerateInsightsSummary}
@@ -149,6 +190,7 @@ export default function App() {
             error={error}
             result={analysisResult}
             analysisType={selectedAnalysis}
+            onApplyCleanedData={handleApplyCleanedData}
           />
         </div>
       </div>

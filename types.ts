@@ -5,6 +5,7 @@ export enum AnalysisType {
   Regression = 'Regression',
   TimeSeries = 'Time-Series Forecasting',
   ThreatAnalysis = 'Threat & Relationship Analysis',
+  DataCleaner = 'Clean & Format Data',
 }
 
 export interface SummaryStat {
@@ -91,13 +92,19 @@ export interface ThreatAnalysisResult {
     relationships: Relationship[];
 }
 
+export interface DataCleanerResult {
+  cleanedData: Record<string, string | number | null>[];
+  cleaningSummary: string[];
+}
+
 export type AnalysisResultData =
   | EDAResult
   | ClusteringResult
   | ClassificationResult
   | RegressionResult
   | TimeSeriesResult
-  | ThreatAnalysisResult;
+  | ThreatAnalysisResult
+  | DataCleanerResult;
 
 export interface AnalysisOptions {
   clusteringColumns?: string[];

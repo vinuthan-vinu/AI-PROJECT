@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { AnalysisResultData, AnalysisType } from '../types';
 import { Loader } from './Loader';
@@ -9,6 +8,7 @@ import { ClassificationResultDisplay } from './results/ClassificationResultDispl
 import { RegressionResultDisplay } from './results/RegressionResultDisplay';
 import { TimeSeriesResultDisplay } from './results/TimeSeriesResultDisplay';
 import { ThreatAnalysisResultDisplay } from './results/ThreatAnalysisResultDisplay';
+import { DataCleanerResultDisplay } from './results/DataCleanerResultDisplay';
 import { InfoIcon } from './Icons';
 
 interface AnalysisResultProps {
@@ -16,9 +16,10 @@ interface AnalysisResultProps {
   error: string | null;
   result: AnalysisResultData | null;
   analysisType: AnalysisType | null;
+  onApplyCleanedData?: (cleanedData: Record<string, any>[]) => void;
 }
 
-export const AnalysisResult: React.FC<AnalysisResultProps> = ({ isLoading, error, result, analysisType }) => {
+export const AnalysisResult: React.FC<AnalysisResultProps> = ({ isLoading, error, result, analysisType, onApplyCleanedData }) => {
   if (isLoading) {
     return <Loader />;
   }
@@ -37,6 +38,8 @@ export const AnalysisResult: React.FC<AnalysisResultProps> = ({ isLoading, error
 
   const renderResult = () => {
     switch (analysisType) {
+      case AnalysisType.DataCleaner:
+        return <DataCleanerResultDisplay data={result as any} onApply={onApplyCleanedData!} />;
       case AnalysisType.EDA:
         return <EDAResultDisplay data={result as any} />;
       case AnalysisType.Clustering:
@@ -59,7 +62,7 @@ export const AnalysisResult: React.FC<AnalysisResultProps> = ({ isLoading, error
       <h2 className="text-3xl font-bold text-on-surface mb-6">{analysisType} Results</h2>
       
       {/* General AI Disclaimer */}
-      {analysisType !== AnalysisType.ThreatAnalysis && (
+      {analysisType !== AnalysisType.ThreatAnalysis && analysisType !== AnalysisType.DataCleaner && (
         <div className="bg-blue-900/50 border border-blue-700 text-blue-200 px-4 py-3 rounded-lg flex items-start mb-6">
           <InfoIcon className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" />
           <div>

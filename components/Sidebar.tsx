@@ -1,6 +1,6 @@
 import React from 'react';
 import { AnalysisType, AnalysisOptions } from '../types';
-import { LogoIcon, ChartIcon, ClusterIcon, TargetIcon, TrendIcon, BrainIcon, ShieldWarningIcon } from './Icons';
+import { LogoIcon, ChartIcon, ClusterIcon, TargetIcon, TrendIcon, BrainIcon, ShieldWarningIcon, SparklesIcon } from './Icons';
 
 interface SidebarProps {
   headers: string[];
@@ -14,6 +14,7 @@ interface SidebarProps {
 }
 
 const allTools = [
+  { type: AnalysisType.DataCleaner, icon: <SparklesIcon className="w-5 h-5" /> },
   { type: AnalysisType.EDA, icon: <ChartIcon className="w-5 h-5" /> },
   { type: AnalysisType.Clustering, icon: <ClusterIcon className="w-5 h-5" /> },
   { type: AnalysisType.Classification, icon: <TargetIcon className="w-5 h-5" /> },
@@ -100,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ headers, selectedAnalysis, onS
       </div>
       <nav className="flex-1 overflow-y-auto">
         <div className="mb-6">
-            <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3 px-3">Data Analysis Tools</h2>
+            <h2 className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-3 px-3">Data Tools</h2>
             <ul className="space-y-2">
             {allTools.map(({ type, icon }) => (
                 <li key={type}>
@@ -119,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ headers, selectedAnalysis, onS
             </ul>
         </div>
 
-        {isFileUploaded && (
+        {isFileUploaded && selectedAnalysis !== AnalysisType.DataCleaner && (
           <div className="mt-6 p-4 bg-slate-800 rounded-lg">
             <h3 className="font-semibold text-on-surface mb-2">Options</h3>
             {renderOptions() || <p className="text-sm text-on-surface-variant">Select an analysis to see its options.</p>}
