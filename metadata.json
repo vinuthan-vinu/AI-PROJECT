@@ -1,0 +1,5 @@
+{
+  "name": "SmartInsights - AI Data Analysis Web App",
+  "description": "An innovative AI-powered data analytics web application to explore, visualize, and model CSV datasets using the Gemini API. The app performs Exploratory Data Analysis (EDA), clustering, classification, regression, and time series forecasting in a simple, user-friendly interface.",
+  "requestFramePermissions": []
+}
