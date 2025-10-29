@@ -1,5 +1,5 @@
 # 🤖 AI-Based Data Prediction and Insight Web Application
-
+link-https://ai.studio/apps/drive/1dtUlFbeXQX6dvLstN78WUWiZACuV30Wj
 An intelligent web application that automatically analyzes uploaded CSV datasets to provide instant predictions, insights, and visual comparisons.  
 It uses AI-powered models to understand data structure, detect relationships, and summarize important findings.
 
