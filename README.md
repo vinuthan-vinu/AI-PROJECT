@@ -1,20 +1,46 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# 🤖 AI-Based Data Prediction and Insight Web Application
 
-# Run and deploy your AI Studio app
+An intelligent web application that automatically analyzes uploaded CSV datasets to provide instant predictions, insights, and visual comparisons.  
+It uses AI-powered models to understand data structure, detect relationships, and summarize important findings.
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/drive/1dtUlFbeXQX6dvLstN78WUWiZACuV30Wj
+## 🚀 Features
 
-## Run Locally
+- 📂 **CSV Upload**
+  - Upload any dataset in CSV format.
+  - Automatically read and detect dataset columns and types.
 
-**Prerequisites:**  Node.js
+- 🔍 **Smart Prediction**
+  - Automatically identify suitable prediction models:
+    - **Classification** (for categorical outcomes)
+    - **Regression** (for numerical outcomes)
+    - **Clustering** (for unsupervised pattern detection)
 
+- 🧠 **Automatic Disclaimer**
+  - Generates clear disclaimer messages about:
+    - Data limitations
+    - Prediction reliability
+    - Dataset completeness or missing values
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- 📊 **Data Insights and Comparison**
+  - View correlation between columns.
+  - Compare values across selected attributes.
+  - Identify key influencing factors or variables.
+
+- 📈 **Interactive Visualization**
+  - Display trends, clusters, and regression lines.
+  - Generate summary tables and charts for better understanding.
+
+- 📰 **Important Insights Extraction**
+  - Automatically highlights the most meaningful or “newsworthy” data points.
+  - Provides concise summaries of dataset findings.
+
+- 🌐 **Live AI Assistant View**
+  - The web interface shows AI predictions and analysis instantly after CSV upload.
+  - User-friendly and interactive for both beginners and data researchers.
+
+---
+
+## 📂 Project Overview
+
